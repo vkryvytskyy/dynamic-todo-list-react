@@ -98,9 +98,9 @@ class TodoList extends Component {
             <thead>
               <tr className="tableHead">
                 <th>id</th>
-                <th onClick={this.handleSort}>title</th>
-                <th onClick={this.handleSort}>completed</th>
-                <th onClick={this.handleSort}>username</th>
+                <th onClick={this.handleSort} className="sorting">title</th>
+                <th onClick={this.handleSort} className="sorting">completed</th>
+                <th onClick={this.handleSort} className="sorting">username</th>
               </tr>
             </thead>
             <tbody>

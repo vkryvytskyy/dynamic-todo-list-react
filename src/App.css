@@ -14,6 +14,10 @@
 border: 4px double #b0b0b0;
 }
 
+.sorting:hover {
+  cursor: pointer;
+  background: rgb(83, 153, 110);
+}
 .TodoItem {
   background: #cdcdcd;
   text-align: center
