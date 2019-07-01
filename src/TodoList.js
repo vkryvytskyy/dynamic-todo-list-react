@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import TodoItem from "./TodoItem";
+import {getTodos, getUsers} from './services'
 class TodoList extends Component {
   constructor(props) {
     super(props);
@@ -10,20 +11,11 @@ class TodoList extends Component {
       buttonDisable: false,
       sorting: "none"
     };
-    this.handleClick = this.handleClick.bind(this);
-    this.loadingDecorator = this.loadingDecorator.bind(this);
-    this.handleSort = this.handleSort.bind(this);
   }
 
   async handleClick() {
-    const todosPromise = await fetch(
-      "https://jsonplaceholder.typicode.com/todos"
-    );
-    const fetchedTodos = await todosPromise.json();
-    const usersPromise = await fetch(
-      "https://jsonplaceholder.typicode.com/users"
-    );
-    const fetchedUsers = await usersPromise.json();
+    const fetchedTodos = await getTodos()
+    const fetchedUsers = await getUsers()
 
     this.setState(() => {
       return {
@@ -34,40 +26,53 @@ class TodoList extends Component {
     });
   }
 
-  loadingDecorator() {
-    this.setState(() => {
-      const newButtonStatus = true;
-      
-      return {
-        buttonDisable: newButtonStatus
-      };
+  loadingDecorator = () => {
+    this.setState({
+      buttonDisable: true
     });
-    setTimeout(this.handleClick, 1000);
-  }
+    setTimeout(() => this.handleClick(), 1000);
+  };
 
-  handleSort(event) {
+  handleSort = (event) => {
     event.persist();
-    const type = event.target.textContent;
+    let type = event.target.textContent;
     this.setState(prevState => {
       const newTodos = [...prevState.todos];
       const newUsers = [...prevState.users];
-      if (type === "username") {
+      if (type === "username" && prevState.sorting !== 'username_asc') {
         newUsers.forEach(user => {
           newTodos.map(todo => {
             if (user.id === todo.userId) {
+              type = 'username_asc'
               return (todo.username = user.username);
             }
           });
         });
         newTodos.sort((a, b) => a.username.localeCompare(b.username));
+      } else if (type === "username" && prevState.sorting === 'username_asc') {
+        newUsers.forEach(user => {
+          newTodos.map(todo => {
+            if (user.id === todo.userId) {
+              type = 'username_des'
+              return (todo.username = user.username);
+            }
+          });
+        });
+        newTodos.sort((a, b) => b.username.localeCompare(a.username));
       }
-      if (type === "title") {
+      if (type === "title" && prevState.sorting !== 'title_asc') {
         newTodos.sort((a, b) => a.title.localeCompare(b.title));
+        type = 'title_asc'
+      } else if (type === 'title' && prevState.sorting === 'title_asc') {
+        newTodos.sort((a, b) => b.title.localeCompare(a.title));
+        type = 'title_des'
       }
-      if (type === "completed") {
-        newTodos.sort((a, b) =>
-          a.completed.toString().localeCompare(b.completed.toString())
-        );
+      if (type === "completed" && prevState.sorting !== 'completed_asc') {
+        newTodos.sort((a, b) => a.completed.toString().localeCompare(b.completed.toString()));
+        type = 'completed_asc'
+      } else if (type === 'completed' && prevState.sorting === 'completed_asc') {
+        newTodos.sort((a, b) => b.completed.toString().localeCompare(a.completed.toString()));
+        type = 'completed_des'
       }
 
       return {
@@ -76,11 +81,10 @@ class TodoList extends Component {
         todos: newTodos
       };
     });
-  }
+  };
 
   render() {
     if (!this.state.isLoaded) {
-
       return (
         <button
           className="loadButton"
@@ -91,20 +95,29 @@ class TodoList extends Component {
         </button>
       );
     } else {
-
       return (
         <div>
           <table className="App">
             <thead>
               <tr className="tableHead">
                 <th>id</th>
-                <th onClick={this.handleSort} className="sorting">title</th>
-                <th onClick={this.handleSort} className="sorting">completed</th>
-                <th onClick={this.handleSort} className="sorting">username</th>
+                <th onClick={this.handleSort} className="sorting">
+                  title
+                </th>
+                <th onClick={this.handleSort} className="sorting">
+                  completed
+                </th>
+                <th onClick={this.handleSort} className="sorting">
+                  username
+                </th>
               </tr>
             </thead>
             <tbody>
-              <TodoItem todos={this.state.todos} users={this.state.users} />
+              {this.state.todos.map(todo => {
+                return (
+                  <TodoItem todoData={todo} users={this.state.users} key={todo.title}/>
+                );
+              })}
             </tbody>
           </table>
         </div>

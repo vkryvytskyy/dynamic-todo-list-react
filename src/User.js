@@ -1,14 +1,12 @@
 import React from 'react'
 
 function User(props) {
-  const filteredUsers = [...props.users].filter(user => props.userId === user.id)
-  return filteredUsers.map(user => {
+  const currentUser = props.user;
     return (
       <td>
-        {user.username}
+        {currentUser.username}
       </td>
     )
-  })
 }
 
 export default User
